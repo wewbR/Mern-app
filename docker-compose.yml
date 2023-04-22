@@ -1,0 +1,50 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27500:27017
+    volumes:
+      - /data/db
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+  api:
+    build: ./api
+    restart: always
+    ports:
+      - 3001:3001
+    depends_on:
+      - mongo
+      - rabbit
+  client:
+    build: ./client
+    restart: always
+    ports:
+      - 3000:3000
+  email-service:
+    build: ./email-service
+    ports:
+      - 3002:3000
+    depends_on:
+      - mongo
+      - rabbit
+    restart: always
+  socket:
+    build: ./socket
+    restart: always
+    ports:
+      - 8900:8900
+  s1: 
+    build: ./service1
+    ports:
+      - 3005:3005
+  gateway:
+    image: nginx
+    volumes:
+      - ./gateway/api.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
